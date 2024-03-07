@@ -13,6 +13,12 @@ export type TSitter = {
   yearsActive: number;
 };
 
+export type TFilter = {
+  distance: number;
+  maxExperiance: number;
+  minExperiance: number;
+};
+
 type TPageInfo = {
   endCursor: string;
   hasNextPage: boolean;
@@ -21,29 +27,34 @@ type TPageInfo = {
 };
 
 export const useSittersList = () => {
-  const expiriance = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const experiance = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   const distance = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const [maxExpiriance, setMaxExpiriance] = useState<number>(10);
-  const [minExpiriance, setMinExpiriance] = useState<number>(1);
-  const [selectDistance, setSelectDistance] = useState<number>(10);
+  const [filter, setFilter] = useState<TFilter>({
+    distance: 10,
+    maxExperiance: 10,
+    minExperiance: 1,
+  });
   const [sitters, setSitters] = useState<Array<TSitter>>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageInfo, setPageInfo] = useState<TPageInfo | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [count, setCount] = useState<number>(10);
 
-  const changeDistance = (i: number) => setSelectDistance(i);
-  const selectMinExpiriance = (i: number) => setMinExpiriance(i);
-  const selectMaxExpiriance = (i: number) => setMaxExpiriance(i);
+  const updateFilterValue = (key: keyof TFilter, value: any) => {
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      [key]: value,
+    }));
+  };
 
   const getSitters = () => {
     setLoading(true);
     getSittersNear({
       latitude: 33.543682,
       longitude: -86.779633,
-      experienceMax: maxExpiriance,
-      experienceMin: minExpiriance,
-      distance: selectDistance,
+      experienceMax: filter.maxExperiance,
+      experienceMin: filter.minExperiance,
+      distance: filter.distance,
       count: count,
     })
       .then((res) => {
@@ -68,9 +79,9 @@ export const useSittersList = () => {
       getSittersNear({
         latitude: 33.543682,
         longitude: -86.779633,
-        experienceMax: maxExpiriance,
-        experienceMin: minExpiriance,
-        distance: selectDistance,
+        experienceMax: filter.maxExperiance,
+        experienceMin: filter.minExperiance,
+        distance: filter.distance,
         count: count,
       })
         .then((res) => {
@@ -100,18 +111,12 @@ export const useSittersList = () => {
   return {
     sitters,
     loading,
-    pageInfo,
     totalCount,
     getSitters,
     getMoreSitters,
-    count,
-    expiriance,
+    experiance,
     distance,
-    selectDistance,
-    maxExpiriance,
-    minExpiriance,
-    changeDistance,
-    selectMaxExpiriance,
-    selectMinExpiriance,
+    updateFilterValue,
+    filter,
   };
 };

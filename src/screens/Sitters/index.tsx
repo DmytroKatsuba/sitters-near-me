@@ -1,16 +1,13 @@
-import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
   View,
   Text,
   ActivityIndicator,
-  SafeAreaView,
   FlatList,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
-import { ERootStack, TRootStack } from "../../navigation/config";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useSittersList } from "./hooks/useSittersList";
+import { TFilter, useSittersList } from "./hooks/useSittersList";
 import { SitterCard } from "./components/SitterCard";
 import {
   Body,
@@ -23,42 +20,44 @@ import {
   ViewRow,
 } from "../../components";
 import { EColors } from "../../components/styled/colors";
-import { includes, map } from "lodash";
+import { map } from "lodash";
 
 export const Sitters = () => {
   const [visible, setVisible] = useState<boolean>(false);
-  const navigation = useNavigation<NativeStackNavigationProp<TRootStack>>();
 
   const {
     sitters,
     loading,
-    pageInfo,
     totalCount,
     getSitters,
     getMoreSitters,
-    count,
-    expiriance,
+    experiance,
     distance,
-    selectDistance,
-    maxExpiriance,
-    minExpiriance,
-    changeDistance,
-    selectMaxExpiriance,
-    selectMinExpiriance,
+    filter,
+    updateFilterValue,
   } = useSittersList();
+
+  const load = loading && !sitters.length;
 
   const apply = () => {
     setVisible(false);
     getSitters();
   };
 
-  const renderExpiriance = (
-    data: number[],
-    selectData: number,
-    onSelect: (item: number) => void
-  ) =>
+  const Experiance = ({
+    data,
+    selectData,
+    dataKey,
+  }: {
+    data: number[];
+    selectData: number;
+    dataKey: keyof TFilter;
+  }) =>
     map(data, (item) => (
-      <TouchableOpacity key={item} onPress={() => onSelect(item)}>
+      <TouchableOpacity
+        key={item}
+        onPress={() => updateFilterValue(dataKey, item)}
+      >
         <ItemView
           width="43px"
           padding="10px"
@@ -86,7 +85,7 @@ export const Sitters = () => {
         iconRight="categorie"
         onPressRight={() => setVisible(true)}
       />
-      {loading && !sitters.length ? (
+      {load ? (
         <ActivityIndicator />
       ) : (
         <FlatList
@@ -96,14 +95,7 @@ export const Sitters = () => {
           showsVerticalScrollIndicator={false}
           onEndReached={getMoreSitters}
           ListFooterComponent={
-            <View
-              style={{
-                width: "100%",
-                height: 22,
-                marginTop: 10,
-                alignItems: "center",
-              }}
-            >
+            <View style={styles.footerBlock}>
               {loading ? (
                 <ActivityIndicator />
               ) : (
@@ -121,28 +113,32 @@ export const Sitters = () => {
         onClose={() => setVisible(false)}
         content={
           <>
-            <TitleSemiBold>select expiriance sitter</TitleSemiBold>
+            <TitleSemiBold>select experiance sitter</TitleSemiBold>
             <View>
               <TitleSemiBold>max</TitleSemiBold>
               <ViewRow>
-                {renderExpiriance(
-                  expiriance,
-                  maxExpiriance,
-                  selectMaxExpiriance
-                )}
+                <Experiance
+                  data={experiance}
+                  selectData={filter.maxExperiance}
+                  dataKey="maxExperiance"
+                />
               </ViewRow>
               <TitleSemiBold>min</TitleSemiBold>
               <ViewRow>
-                {renderExpiriance(
-                  expiriance,
-                  minExpiriance,
-                  selectMinExpiriance
-                )}
+                <Experiance
+                  data={experiance}
+                  selectData={filter.minExperiance}
+                  dataKey="minExperiance"
+                />
               </ViewRow>
               <TitleSemiBold>select distance sitter</TitleSemiBold>
               <TitleSemiBold>distance</TitleSemiBold>
               <ViewRow>
-                {renderExpiriance(distance, selectDistance, changeDistance)}
+                <Experiance
+                  data={distance}
+                  selectData={filter.distance}
+                  dataKey="distance"
+                />
               </ViewRow>
             </View>
             <Button onPress={apply}>
@@ -154,3 +150,12 @@ export const Sitters = () => {
     </ViewContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  footerBlock: {
+    width: "100%",
+    height: 22,
+    marginTop: 10,
+    alignItems: "center",
+  },
+});
